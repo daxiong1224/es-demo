@@ -73,9 +73,9 @@ class EsDemoApplicationTests {
      */
     @Test
     public void createDocument() throws IOException {
-        User user = new User("张三", 29);
+        User user = new User("王", 34);
         IndexRequest request = new IndexRequest("name");
-        request.id("1");
+        request.id("6");
         request.timeout(TimeValue.timeValueSeconds(1));
         request.source(JSON.toJSONString(user), XContentType.JSON);
         IndexResponse index = restHighLevelClient.index(request, RequestOptions.DEFAULT);
