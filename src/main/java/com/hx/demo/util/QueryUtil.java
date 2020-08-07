@@ -10,6 +10,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
@@ -30,5 +32,38 @@ public class QueryUtil {
                 log.info(user.toString());
             }
         }
+    }
+
+
+    /**
+     * 聚合查询发送请求
+     * @param restHighLevelClient
+     * @param aggr
+     * @return
+     * @throws IOException
+     */
+    public static Aggregations sendRequestForAggr(RestHighLevelClient restHighLevelClient, AggregationBuilder aggr
+                    , int size) throws IOException {
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.aggregation(aggr);
+        searchSourceBuilder.size(size);//设置查询结果返回数
+
+        //发送请求
+        SearchRequest searchRequest = new SearchRequest("name");
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        
+        if (RestStatus.OK.equals(searchResponse.status()) && searchResponse.getHits().getHits().length > 0) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                User user = JSON.parseObject(hit.getSourceAsString(), User.class);
+                log.info(user.toString());
+            }
+        }
+        
+        Aggregations aggregations = searchResponse.getAggregations();//获取响应中的聚合信息
+        
+        return aggregations;
     }
 }
